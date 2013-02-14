@@ -5,12 +5,10 @@ enyo.kind({
 		onChange: ""
 	},
 	components: [
-		{name: "model", kind: "Component"},
-		{kind: "Serializer"},
 		{name: "selectionOutline", kind: "DesignerOutline", style: "border: 5px dotted rgba(255, 146, 38, 0.7);"},
 		{name: "containerOutline", kind: "DesignerOutline", style: "border: 5px solid rgba(24, 24, 255, 0.3);"},
 		{kind: "FittableRows", classes: "deimos_panel_center  enyo-fit", components: [
-			{name: "sandbox", fit: true, kind: "Sandbox"}
+			{name: "sandbox", fit: true, kind: "Sandbox", onSelected: "selected"}
 		]}
 	],
 	style: "outline: none; position: relative;",
@@ -24,23 +22,7 @@ enyo.kind({
 		ondrop: "drop"
 	},
 	getComponents: function() {
-		return this.$.serializer.getComponents(this.$.sandbox.children[0], this.$.model);
-	},
-	previewDomEvent: function(e) {
-		if (e.dispatchTarget.isDescendantOf(this.$.sandbox)) {
-			//TODO: Make this more-sophisticated by using the dispatchTarget to determine what to filter
-			//TODO: In particular, filter "drag" events for slider knobs (but not other controls)
-			if (e.type == "down" || e.type=="tap" || e.type=="click") {
-				this.trySelect(e.dispatchTarget instanceof enyo.Control ? e.dispatchTarget : null);
-				if (e.preventDefault) {
-					e.preventDefault();
-				}
-				return true;
-			} else {
-				//TODO: remove this when we've figured out how to do this a bit better
-				//console.log("ignoring "+e.type+" for "+e.dispatchTarget.name);
-			}
-		}
+		return this.$.sandbox.getTree();
 	},
 	keyup: function(inSender, inEvent) {
 		var ESC = 27;
@@ -51,14 +33,6 @@ enyo.kind({
 	hideSelection: function() {
 		this.$.selectionOutline.outlineControl(null);
 		this.$.containerOutline.outlineControl(null);
-	},
-	trySelect: function(inControl) {
-		var c = inControl;
-		while (c && (c.owner != this.$.model)) {
-			c = c.parent;
-		}
-		this.select(c);
-		this.doSelect({component: c});
 	},
 	selectContainer: function() {
 		if (this.selection) {
@@ -88,18 +62,14 @@ enyo.kind({
 	load: function(inDocument) {
 		this.proxyUnknownKinds(inDocument);
 		this.hideSelection();
-		this.$.model.destroyComponents();
-		this.$.sandbox.load(inDocument, this.$.model);
+		this.$.sandbox.load(inDocument);
 		this.render();
 		this.resized();
-		var c = this.$.sandbox.children[0];
-		if (c) {
-			this.trySelect(c);
-		}
 	},
 	save: function() {
 		this.unProxyUnknownKinds(this.$.sandbox);
-		return this.$.serializer.serialize(this.$.sandbox.children[0], this.$.model);
+		var tree = this.$.sandbox.getTree();
+		return tree;
 	},
 	deleteAction: function() {
 		if (this.selection) {

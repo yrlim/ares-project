@@ -116,7 +116,8 @@ enyo.kind({
 		}), 200);
 	},
 	refreshComponentView: function() {
-		this.$.componentView.visualize(this.$.designer.$.sandbox, this.$.designer.$.model);
+		var tree = this.$.designer.$.sandbox.getTree();
+		this.$.componentView.visualize(tree);
 		this.$.componentView.select(this.$.designer.selection);
 	},
 	designerChange: function(inSender) {
@@ -190,7 +191,6 @@ enyo.kind({
 		return true; // Stop the propagation of the event
 	},
 	// When the designer finishes rendering, re-build the components view
-	// TODO: Build this from the Model, not by trawling the view hierarchy...
 	designRendered: function() {
 		this.refreshComponentView();
 		return true; // Stop the propagation of the event

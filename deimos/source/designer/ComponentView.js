@@ -11,15 +11,15 @@ enyo.kind({
 		]}
 	],
 	indent: 32,
-	visualize: function(inContainer, inOwner) {
+	visualize: function(tree) {
 		this.map = {};
 		this.destroyClientControls();
 		//this.createEntry(inContainer, 0);
-		this._visualize(inContainer, inOwner, 0); //this.indent);
+		this._visualize(tree, 0); //this.indent);
 		this.render();
 	},
 	createEntry: function(inComponent, inIndent) {
-		var kindName = inComponent.kindName === 'Ares.Proxy' ? inComponent.realKind : inComponent.kindName;
+		var kindName = inComponent.kind === 'Ares.Proxy' ? inComponent.realKind : inComponent.kind;
 		this.map[inComponent.name] = this.createComponent(
 			{comp: inComponent, style: "padding-left: " + inIndent + "px;", ontap: "itemSelect", ondragover: "itemDragOver", ondragstart: "itemDragStart", components: [
 				{tag: "b", content: inComponent.name},
@@ -27,14 +27,15 @@ enyo.kind({
 			]}
 		);
 	},
-	_visualize: function(inContainer, inOwner, inIndent) {
-		var c$ = inContainer.getClientControls();
-		for (var i=0, c; (c=c$[i]); i++) {
-			if (c.owner == inOwner) {
-				this.createEntry(c, inIndent);
-			}
-			if (c instanceof enyo.Control) {
-				this._visualize(c, inOwner, inIndent + this.indent);
+	_visualize: function(tree, inIndent) {
+		if (!tree.name) {
+			return;
+		}
+		this.createEntry(tree, inIndent);
+		var c$ = tree.components;
+		if (c$) {
+			for (var i=0, c; (c=c$[i]); i++) {
+				this._visualize(c, inIndent + this.indent);
 			}
 		}
 	},
