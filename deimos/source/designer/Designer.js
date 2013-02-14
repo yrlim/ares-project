@@ -8,7 +8,7 @@ enyo.kind({
 		{name: "selectionOutline", kind: "DesignerOutline", style: "border: 5px dotted rgba(255, 146, 38, 0.7);"},
 		{name: "containerOutline", kind: "DesignerOutline", style: "border: 5px solid rgba(24, 24, 255, 0.3);"},
 		{kind: "FittableRows", classes: "deimos_panel_center  enyo-fit", components: [
-			{name: "sandbox", fit: true, kind: "Sandbox", onSelected: "selected"}
+			{name: "sandbox", fit: true, kind: "Sandbox", onSelected: "select"}
 		]}
 	],
 	style: "outline: none; position: relative;",
@@ -48,12 +48,10 @@ enyo.kind({
 		return s;
 	},
 	select: function(inControl) {
-		if (inControl && (inControl == this || !inControl.isDescendantOf(this.$.sandbox))) {
-			inControl = null;
-		}
 		this.selection = inControl;
-		this.$.selectionOutline.outlineControl(this.selection);
-		this.$.containerOutline.outlineControl(this.getSelectedContainer());
+		var b = this.$.sandbox.getControlBounds(inControl);
+		this.$.selectionOutline.outlineControl(b);
+		this.$.containerOutline.outlineControl(b);
 	},
 	refresh: function() {
 		this.select(this.selection);
@@ -240,17 +238,11 @@ enyo.kind({
 	create: function() {
 		this.inherited(arguments);
 	},
-	outlineControl: function(inControl) {
-		if (inControl) {
-			if (inControl.hasNode() && this.hasNode()) {
-				// NOTE: reparenting outline node, requires care with rendering sequences
-				inControl.node.parentNode.appendChild(this.node);
-			}
-			var b = inControl.getBounds();
-			this.setBounds({left: b.left, top: b.top, width: b.width - 10, height: b.height - 10});
+	outlineControl: function(bounds) {
+		if (bounds) {
+			this.setBounds({left: bounds.left, top: bounds.top, width: bounds.width - 10, height: bounds.height - 10});
 			this.show();
 		} else {
-			this.removeNodeFromDom();
 			this.hide();
 		}
 	}

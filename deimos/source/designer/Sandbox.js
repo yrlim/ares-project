@@ -9,6 +9,9 @@ enyo.kind({
 		{name: "model", kind: "Component"},
 		{kind: "Serializer"},
 	],
+	published: {
+		selected: undefined
+	},
 	previewDomEvent: function(e) {
 		if (e.dispatchTarget.isDescendantOf(this)) {
 			//TODO: Make this more-sophisticated by using the dispatchTarget to determine what to filter
@@ -29,19 +32,22 @@ enyo.kind({
 		this.inherited(arguments);
 		this.doDesignRendered();
 	},
+	select: function(inControl) {
+		this.selected=inControl;
+		this.doSelected({name: inControl.name});
+	},
 	trySelect: function(inControl) {
 		var c = inControl;
 		while (c && (c.owner != this.$.model)) {
 			c = c.parent;
 		}
 		this.select(c);
-		this.doSelected({component: c});
 	},
 	// load a components block into the sandbox
 	load: function(inDocument) {
 		this.destroyClientControls();
 		this.createComponents([inDocument], {owner: this.$.model});
-		this.doSelected(this.children[0]);
+		this.select(this.children[0]);
 	},
 	// return a components block
 	getTree: function() {
@@ -50,5 +56,25 @@ enyo.kind({
 		}
 		return {};
 	},
-	
+	// return the bounds on the specified control
+	getControlBounds: function(inControl) {
+		var c = this.controlSearch(this, inControl);
+		if (c) {
+			return c.getBounds();
+		}
+	},
+	controlSearch: function(context, inControl) {
+		if (context.name === inControl.name) {
+			return context;
+		}
+		if (context.children) {
+			for (var i=0; i < context.children.length; i++) {
+				var c = context.children[i];
+				var f = this.controlSearch(c, inControl);
+				if (f) {
+					return f;
+				}
+			}
+		}
+	}
 });

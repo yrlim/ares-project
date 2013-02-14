@@ -137,7 +137,7 @@ enyo.kind({
 	},
 	componentViewSelect: function(inSender) {
 		var c = inSender.selection;
-		this.$.designer.select(c);
+		this.$.designer.select({name: c.name});
 		this.refreshInspector();
 		this.enableDisableButtons(c);
 		return true; // Stop the propagation of the event
