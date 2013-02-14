@@ -5,10 +5,10 @@ enyo.kind({
 		onChange: ""
 	},
 	components: [
-		{name: "selectionOutline", kind: "DesignerOutline", style: "border: 5px dotted rgba(255, 146, 38, 0.7);"},
-		{name: "containerOutline", kind: "DesignerOutline", style: "border: 5px solid rgba(24, 24, 255, 0.3);"},
+		{name: "selectionOutline", kind: "DesignerOutline", style: "border: 5px dotted rgba(255, 146, 38, 0.7); position: absolute; z-index: 1000"},
+		{name: "containerOutline", kind: "DesignerOutline", style: "border: 5px solid rgba(24, 24, 255, 0.3); position: absolute; z-index: 1000"},
 		{kind: "FittableRows", classes: "deimos_panel_center  enyo-fit", components: [
-			{name: "sandbox", fit: true, kind: "Sandbox", onSelected: "select"}
+			{name: "sandbox", fit: true, kind: "Sandbox", onSelected: "doSelect"}
 		]}
 	],
 	style: "outline: none; position: relative;",
