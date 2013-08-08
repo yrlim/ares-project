@@ -5,6 +5,7 @@ enyo.kind({
 		edited: false
 	},
 	components: [
+		{name: "actionPopup", kind:"PaletteComponentActionPopup", centered: true, floating: true, autoDismiss: false, modal: true},
 		{kind: "FittableRows", classes: "enyo-fit", components: [
 			{name: "body", fit: true, classes: "deimos_panel_body", kind: "FittableColumns", components: [
 				{name: "left", classes:"ares_deimos_left", kind: "Palette", name:"palette"},
@@ -84,7 +85,10 @@ enyo.kind({
 		onDesignerUpdate: "",
 		onUndo: "",
 		onRedo: "",
-		onRegisterMe: ""
+		onRegisterMe: ""		
+	},
+	handlers:{
+		onPaletteComponentAction: "runPaletteComponentAction"
 	},
 	kinds: [],
 	index: null,
@@ -362,16 +366,25 @@ enyo.kind({
 			target = (targetId)
 					?	this.getItemById(targetId, this.kinds[this.index].components)
 					:	this.kinds[this.index];
-		
+
 		if (!config) {
 			enyo.warn("Could not create new item - bad data: ", inEvent);
 			return true;
 		}
 		
+		// check component's options
+		var options = Model.getKindOptions(config.name || config.kind);
+		
 		// Give the new component (and any children) a fresh _aresId_
 		config.aresId = this.generateNewAresId();
 		if (config.components) {
 			this.addAresIds(config.components);
+		}
+
+		//if component has a "isViewTemplate" option, Designer show action popup
+		if(options && options.isViewTemplate){
+			this.showActionPopup(options, config, target);
+			return true;
 		}
 		
 		if (beforeId) {
@@ -794,6 +807,42 @@ enyo.kind({
 		document.ondragover =  enyo.dispatch;
 		document.ondrop =      enyo.dispatch;
 		document.ondragend =   enyo.dispatch;
+	},
+
+	showActionPopup: function(options, config, target){
+		if(options.isViewTemplate){
+			this.$.actionPopup.setActionShowing("vtAction");
+		} else {
+			//FIXME: for other palette component actions
+			this.$.actionPopup.setActionShowing(null);
+		}
+		this.$.actionPopup.setConfigComponent(config);
+		this.$.actionPopup.setTargetComponent(target);
+		this.$.actionPopup.show();
+	},
+		
+	runPaletteComponentAction: function(inSender,inEvent){
+		var config = this.$.actionPopup.getConfigComponent(config);
+		var target = this.$.actionPopup.getTargetComponent(target);
+		var beforeId = inEvent.beforeId;
+
+		if(inEvent.getName() === "addtoKind"){
+			if (beforeId) {
+				this.insertItemBefore(config, target, beforeId);
+			} else {
+				this.insertItem(config, target);
+			}	
+			this.$.inspector.initUserDefinedAttributes(this.kinds[this.index].components);
+			this.addAresKindOptions(this.kinds[this.index].components);
+			this.rerenderKind(config.aresId);
+		} else if (inEvent.getName() === "replaceKind"){
+			console.log("not implemented yet");
+
+		} else if (inEvent.getName() === "addNewKind"){
+			console.log("not implemented yet");
+		}
+		
+		this.$.actionPopup.hide();
 	}
 });
 
