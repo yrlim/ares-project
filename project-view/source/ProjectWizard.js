@@ -67,7 +67,7 @@ enyo.kind({
 		propW.setTemplateList([]);		// Reset template list
 
 		// Pre-fill project properties widget
-		propW.preFill(ProjectConfig.PREFILLED_CONFIG_FOR_UI),
+		propW.preFill(ProjectConfig.PREFILLED_CONFIG_FOR_UI);
 		propW.$.projectDirectory.setContent(this.selectedDir.path);
 		propW.$.projectName.setValue(this.selectedDir.name);
 		propW.activateFileChoosers(false);
@@ -116,7 +116,7 @@ enyo.kind({
 			appinfoReq.response(this, function(inSender, fileStuff) {
 				var info;
 				try {
-					info = JSON.parse(fileStuff.content);
+					info = enyo.json.parse(fileStuff.content);
 				} catch(err) {
 					this.hide();
 					this.warn( "Unable to parse appinfo.json >>", fileStuff.content, "<<");
@@ -540,7 +540,7 @@ enyo.kind({
 				this.trace( "file contents: '", fileStuff.content, "'" ) ;
 
 				try {
-					projectData = JSON.parse(fileStuff.content)  ;
+					projectData = enyo.json.parse(fileStuff.content)  ;
 				} catch(e) {
 					this.warn("Error parsing project data: ", e.toString());
 				}
@@ -718,7 +718,7 @@ enyo.kind({
 			return;
 		}
 
-		var req = service.putFile(fileId, JSON.stringify(this.newConfigData, null, 2));
+		var req = service.putFile(fileId, enyo.json.stringify(this.newConfigData, null, 2));
 		req.response(this, this.createProjectEntry);
 		req.error(this, function(inSender, inError) {
 			this.warn("Unable to duplicate the project, unable to update 'project.json'", inError);

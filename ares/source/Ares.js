@@ -1,5 +1,16 @@
 /* global Ares, async, ares, alert */
 
+enyo.path.addPaths({
+	"assets"	: "$enyo/../assets",
+	// deprecated aliases
+	"utilities"	: "$enyo/../utilities",
+	"services"	: "$enyo/../services",
+	"phobos"	: "$enyo/../phobos",
+	"deimos"	: "$enyo/../deimos",
+	"harmonia"	: "$enyo/../harmonia",
+	"project-view"	: "$enyo/../project-view"
+});
+
 enyo.kind({
 	name: "Ares",
 	kind: "Control",
@@ -246,7 +257,7 @@ enyo.kind({
 		}
 
 		function _footer(err, result) {
-			if (self.debug) { enyo.log("err:", err, "result:", result); }
+			self.trace("err:", err, "result:", result);
 			if (typeof inEvent.next === 'function') {
 				inEvent.next(err, result);
 			}
@@ -577,3 +588,7 @@ enyo.kind({
 		instance: null
 	}
 });
+
+if ( ! Ares.isBrowserSupported()) {
+	alert($L("Ares is designed for the latest version of IE. We recommend that you upgrade your browser or use Chrome"));
+}

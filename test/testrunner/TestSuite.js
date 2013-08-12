@@ -1,5 +1,4 @@
-/*global enyo, console
-*/
+/* global enyo */
 /*
 Test Package Wish list:
 -----------------------
@@ -53,7 +52,7 @@ enyo.kind({
 	log: function(msg) {
 		this.logMessages = this.logMessages || [];
 		if (typeof msg !== "string") {
-			msg = JSON.stringify(msg);
+			msg = enyo.json.stringify(msg);
 		}
 		this.logMessages.push(msg);
 		enyo.log("*****Ares TestSuite***** ", msg);

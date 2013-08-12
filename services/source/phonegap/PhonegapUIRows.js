@@ -11,35 +11,37 @@ enyo.kind({
 	published: {
 		label: "",
 		name: "",
-		value: ""
+		value: "",
+		jsonSection: "",
+		platform: ""
 	},
-	components: [				
+	components: [
 	],
-	
+
 	/**
 	 * @private
 	 */
 	create: function () {
 		ares.setupTraceLogger(this);
-		this.inherited(arguments);			
+		this.inherited(arguments);
 	}
 });
 
 enyo.kind({
 	name: "Phonegap.ProjectProperties.CheckBoxRow",
-	kind: "Phonegap.ProjectProperties.Row",	
+	kind: "Phonegap.ProjectProperties.Row",
 	debug: false,
-	published: {		
-		activated: false	
+	published: {
+		activated: false
 	},
 	components: [
-		{	
-			kind: "onyx.Checkbox", 
-			name: "ConfigurationCheckBox", 
+		{
+			kind: "onyx.Checkbox",
+			name: "ConfigurationCheckBox",
 			classes: "ares-project-properties-drawer-row-check-box-label",
 			onchange: "updateConfigurationValue"
 		},
-		{name: "label", content: this.label}	
+		{name: "label", content: this.label}
 	],
 
 	/**
@@ -47,9 +49,9 @@ enyo.kind({
 	 */
 	create: function () {
 		ares.setupTraceLogger(this);
-		this.inherited(arguments);	
-		this.labelChanged();	
-	},	
+		this.inherited(arguments);
+		this.labelChanged();
+	},
 
 	/**
 	 * @private
@@ -62,13 +64,13 @@ enyo.kind({
 	 * @private
 	 */
 	valueChanged: function () {
-		this.$.ConfigurationCheckBox.setChecked(this.value);		
+		this.$.ConfigurationCheckBox.setChecked(this.value);
 	},
 
 	/**
 	 * @param  {Object} inSender the event sender
 	 * @param  {Object} inValue  the event value
-	 * 
+	 *
 	 * @private
 	 */
 	updateConfigurationValue: function (inSender, inValue) {
@@ -79,18 +81,16 @@ enyo.kind({
 
 	/** @public */
 	setProjectConfig: function (config) {
-		this.setValue(config.features[this.name]);
+		this.setValue(config[this.jsonSection][this.name]);
 	},
 	/** @public */
 	getProjectConfig: function (config) {
-		config.features[this.name] = this.getValue();
+		config[this.jsonSection][this.name] = this.getValue();
 	}
 });
 
 /**
  * Define a row containing an Input widget.
- * This kind in meant to be used to define a configuration's parameter that goes to the block
- * {providers.preferences} of the file "project.json"
  */
 enyo.kind({
 	name: "Phonegap.ProjectProperties.InputRow",
@@ -103,26 +103,22 @@ enyo.kind({
 	},
 	published: {
 		value: "",
-		inputTip: "",
-		activated: false,
-		status: false,
-		buttonTip: ""
+		inputTip: ""
 	},
 	components: [
 		{name: "label", classes: "ares-project-properties-drawer-row-label"},
 		{
 			kind: "onyx.InputDecorator",
-			classes: "ares-project-properties-input-medium", 
+			classes: "ares-project-properties-input-medium",
 			components: [{
-					kind: "onyx.Input",	
-					name: "ConfigurationInput", 
-					classes: "enyo-unselectable"
+					kind: "onyx.Input",
+					name: "ConfigurationInput",
+					onchange: "updateConfigurationValue"
 				}
 			]
-		},
-		{kind: "onyx.IconButton", name:"configurationButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"}
+		}
 	],
-	
+
 	/**
 	 * @private
 	 */
@@ -133,9 +129,6 @@ enyo.kind({
 
 		this.valueChanged();
 		this.inputTipChanged();
-		this.activatedChanged();
-		this.statusChanged();
-		this.buttonTipChanged();
 	},
 
 	/**
@@ -148,68 +141,50 @@ enyo.kind({
 	/** @private */
 	valueChanged: function () {
 		this.$.ConfigurationInput.setValue(this.value);
-		this.setStatus(true);
 	},
+
 	/** @private */
 	inputTipChanged: function () {
 		this.$.ConfigurationInput.setAttribute("title", this.inputTip);
 	},
-	/** @private */
-	activatedChanged: function () {
-		if (this.activated) {
-			this.$.configurationButton.show();
-			this.statusChanged();
-		} else {
-			this.$.configurationButton.hide();
-		}
-	},
-	/** @private */
-	statusChanged: function () {
-		if (this.status) {
-			this.$.configurationButton.setSrc("$project-view/assets/images/file-32x32.png");
-		} else {
-			this.$.configurationButton.setSrc("$project-view/assets/images/file_broken-32x32.png");
-		}
-	},
-	/** @private */
-	buttonTipChanged: function () {
-		this.$.configurationButton.setAttribute("title", this.buttonTip);
-	},
-	
-	/** @private */
-	pathInputTap: function (inSender, inEvent) {
-		var header = "";
-		if (this.name === 'icon') {
-			header = $L("Select an icon file");
-		} else if (this.name === 'splashScreen') {
-			header = $L("Select a splashscreen file");
-		}
-		this.doInputButtonTap({header: header});
+
+	/**
+	 * @param  {Object} inSender the event sender
+	 * @param  {Object} inValue  the event value
+	 *
+	 * @private
+	 */
+	updateConfigurationValue: function (inSender, inValue) {
+		this.setValue(inSender.getValue());
 		return true;
 	},
+
 	/** @public */
 	setProjectConfig: function (config) {
-		this.setValue(config.preferences[this.name]);
+		this.setValue(config[this.jsonSection][this.name]);
 	},
 	/** @public */
 	getProjectConfig: function (config) {
-		config.preferences[this.name] = this.getValue();
+		config[this.jsonSection][this.name] = this.getValue();
 	}
 });
 
 enyo.kind({
-	name: "Phonegap.ProjectProperties.AutoGenerateXML",
+	name: "Phonegap.ProjectProperties.BuildOption",
 	kind: "Phonegap.ProjectProperties.Row",
 	classes: "ares-project-properties-drawer-row",
+	published: {
+		pan: ""
+	},
 	debug: false,
-	components: [		
-		{	
-			kind: "onyx.Checkbox", 
-			name: "ConfigurationCheckBox", 
+	components: [
+		{
+			kind: "onyx.Checkbox",
+			name: "ConfigurationCheckBox",
 			classes: "ares-project-properties-drawer-row-check-box-label",
 			onchange: "updateConfigurationValue"
 		},
-		{name: "label", content: this.label}	
+		{name: "label", content: this.label}
 	],
 
 	/**
@@ -217,9 +192,9 @@ enyo.kind({
 	 */
 	create: function () {
 		ares.setupTraceLogger(this);
-		this.inherited(arguments);	
-		this.labelChanged();	
-	},	
+		this.inherited(arguments);
+		this.labelChanged();
+	},
 
 	/**
 	 * @private
@@ -232,30 +207,48 @@ enyo.kind({
 	 * @private
 	 */
 	valueChanged: function () {
-		this.$.ConfigurationCheckBox.setChecked(this.value);		
+		this.$.ConfigurationCheckBox.setChecked(this.value);
 	},
 
 	/**
 	 * @param  {Object} inSender the event sender
 	 * @param  {Object} inValue  the event value
-	 * 
+	 *
 	 * @private
 	 */
 	updateConfigurationValue: function (inSender, inValue) {
 		this.setValue(inSender.getValue());
-		
+		this.displayConfigXmlPanel();
 		return true;
+	},
+	displayConfigXmlPanel: function(){
+
+		if (this.name === "autoGenerateXML"){
+			this.trace("auto-generate config.xml is enabled: ", this.getValue());
+
+			if (this.pan) {
+				if(this.getValue()) {
+					this.pan.setClassAttribute("ares-project-properties-targetsRows-display");
+				} else {
+					this.pan.setClassAttribute("ares-project-properties-targetsRows-hide");
+				}
+			}
+		}
+
 	},
 
 	/** @public */
 	setProjectConfig: function (config) {
-		this.setValue(config.autoGenerateXML);
+		this.setValue(config[this.name]);
+		this.displayConfigXmlPanel();
 	},
 	/** @public */
 	getProjectConfig: function (config) {
-		config.autoGenerateXML = this.getValue();
+		config[this.name] = this.getValue();
 	}
 });
+
+
 
 enyo.kind({
 	name: "Phonegap.ProjectProperties.AccessRow",
@@ -268,8 +261,8 @@ enyo.kind({
 			kind: "onyx.InputDecorator",
 			classes: "ares-project-properties-input-medium",
 			components: [{
-					kind: "onyx.Input",	
-					name: "ConfigurationInput", 
+					kind: "onyx.Input",
+					name: "ConfigurationInput",
 					onchange: "updateConfigurationValue"
 				}
 			]
@@ -302,18 +295,18 @@ enyo.kind({
 	/**
 	 * @param  {Object} inSender the event sender
 	 * @param  {Object} inValue  the event value
-	 * 
+	 *
 	 * @private
 	 */
 	updateConfigurationValue: function (inSender, inValue) {
 		this.setValue(inSender.getValue());
-
 		return true;
 	},
 
 	/** @public */
 	setProjectConfig: function (config) {
 		this.setValue(config.access.origin);
+		this.valueChanged();
 	},
 	/** @public */
 	getProjectConfig: function (config) {
@@ -359,7 +352,7 @@ enyo.kind({
 	 */
 	labelChanged: function () {
 		this.$.label.setContent(this.label);
-	},	 
+	},
 
 	/**
 	 * Set the content of the row's picker when the row is created.
@@ -368,9 +361,9 @@ enyo.kind({
 	contentValueChanged: function () {
 		enyo.forEach(this.contentValue, function (inValue) {
 			var itemState = inValue === this.value ? true : false;
-			this.$.ConfigurationPicker.createComponent({content: inValue, active: itemState});			
+			this.$.ConfigurationPicker.createComponent({content: inValue, active: itemState});
 		}, this);
-	}, 
+	},
 
 	/**
 	 * This function change the displayed value of the picker to the parameter "inContent".
@@ -384,8 +377,8 @@ enyo.kind({
 		    if(this.$.ConfigurationPicker.$[key].kind === "onyx.MenuItem"){
 			this.$.ConfigurationPicker.$[key].active = false;
 				if(this.$.ConfigurationPicker.$[key].content === inContent){
-					this.$.ConfigurationPicker.setSelected(this.$.ConfigurationPicker.$[key]);					
-				}	
+					this.$.ConfigurationPicker.setSelected(this.$.ConfigurationPicker.$[key]);
+				}
 		    }
 		  }
 	},
@@ -400,22 +393,22 @@ enyo.kind({
 	/**
 	 * @param  {Object} inSender the event sender
 	 * @param  {Object} inValue  the event value
-	 * 
+	 *
 	 * @private
 	 */
 	updateConfigurationValue: function (inSender, inValue) {
 		this.setValue(inValue.content);
-		
+
 		return true;
 	},
 
 	/** @public */
 	setProjectConfig: function (config) {
-		this.setValue(config.preferences[this.name]);
+		this.setValue(config[this.jsonSection][this.name]);
 	},
 	/** @public */
 	getProjectConfig: function (config) {
-		config.preferences[this.name] = this.getValue();
+		config[this.jsonSection][this.name] = this.getValue();
 	}
 });
 
@@ -427,13 +420,13 @@ enyo.kind({
 	kind: "Phonegap.ProjectProperties.Row",
 	classes: "ares-project-properties-drawer-row",
 	debug: false,
-	published: {				
+	published: {
 		density: "",
 
 		inputTip: "",
 		activated: false,
 		status: false,
-		buttonTip: ""	
+		buttonTip: ""
 	},
 	events: {
 		onInputButtonTap: "",
@@ -442,18 +435,18 @@ enyo.kind({
 	components: [{
 			name: "label",
 			classes: "ares-project-properties-drawer-row-label"
-		}, 
+		},
 		{
 			kind: "onyx.InputDecorator",
-			classes: "ares-project-properties-input-medium", 
+			classes: "ares-project-properties-input-medium",
 			components: [
 				{
-					kind: "onyx.Input", 
-					name: "AndroidImgPath", 
+					kind: "onyx.Input",
+					name: "AndroidImgPath",
 					classes: "enyo-unselectable"
 				}
 			]
-		}, 
+		},
 		{kind: "onyx.IconButton", name:"AndroidImgButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"},
 		{
 			kind: "onyx.PickerDecorator",
@@ -461,12 +454,12 @@ enyo.kind({
 			components: [
 				{kind: "onyx.PickerButton"},
 				{
-					kind: "onyx.Picker", 
-					name: "AndroidDensity", 
+					kind: "onyx.Picker",
+					name: "AndroidDensity",
 					onSelect: "updateAndroidIconDensity",
 					components: [
 						{content: "ldpi"},
-						{content: "mdpi", active: true}, 
+						{content: "mdpi", active: true},
 						{content: "hdpi"},
 						{content: "xdpi"}
 					]
@@ -481,13 +474,13 @@ enyo.kind({
 	create: function () {
 		ares.setupTraceLogger(this);
 		this.inherited(arguments);
-		this.labelChanged();	
+		this.labelChanged();
 
 		this.valueChanged();
 		this.inputTipChanged();
 		this.activatedChanged();
 		this.statusChanged();
-		this.buttonTipChanged();	
+		this.buttonTipChanged();
 	},
 
 	/**
@@ -513,8 +506,8 @@ enyo.kind({
 		    if(this.$.AndroidDensity.controls[key].kind === "onyx.MenuItem"){
 			this.$.AndroidDensity.controls[key].active = false;
 				if(this.$.AndroidDensity.controls[key].content === inContent){
-					this.$.AndroidDensity.setSelected(this.$.AndroidDensity.controls[key]);					
-				}	
+					this.$.AndroidDensity.setSelected(this.$.AndroidDensity.controls[key]);
+				}
 		    }
 		  }
 	},
@@ -522,7 +515,7 @@ enyo.kind({
 	/**
 	 * @param  {Object} inSender the event sender
 	 * @param  {Object} inValue  the event value
-	 * 
+	 *
 	 * @private
 	 */
 	updateAndroidIconDensity: function (inSender, inValue) {
@@ -561,7 +554,7 @@ enyo.kind({
 	buttonTipChanged: function () {
 		this.$.AndroidImgButton.setAttribute("title", this.buttonTip);
 	},
-	
+
 	/** @private */
 	pathInputTap: function (inSender, inEvent) {
 		var header = "";
@@ -580,16 +573,16 @@ enyo.kind({
 	},
 	/** @public */
 	getProjectConfig: function (config) {
-		config[this.name]["android"].src = this.getValue();
-		config[this.name]["android"].density = this.getDensity();
+		config[this.name][this.platform].src = this.getValue();
+		config[this.name][this.platform].density = this.getDensity();
 	}
 });
 
 /**
- * Define a row to let the user add the path to an IOS icon or a splash screen image into the file "config.xml".
+ * Define a row to let the user add the path to an  icon or a splash screen image into the file "config.xml".
  */
 enyo.kind({
-	name: "Phonegap.ProjectProperties.IosImgRow",
+	name: "Phonegap.ProjectProperties.ImgRow",
 	kind: "Phonegap.ProjectProperties.Row",
 	classes: "ares-project-properties-drawer-row",
 	debug: false,
@@ -597,7 +590,7 @@ enyo.kind({
 		onInputButtonTap: "",
 		onPathChecked: ""
 	},
-	published: {		
+	published: {
 		height: "",
 		width: "",
 
@@ -605,31 +598,31 @@ enyo.kind({
 		activated: false,
 		status: false,
 		buttonTip: ""
-	},	
+	},
 	components: [
 		{
 			name: "label",
 			classes: "ares-project-properties-drawer-row-label"
-		}, 
+		},
 		{
 			kind: "onyx.InputDecorator",
-			classes: "ares-project-properties-input-medium", 
+			classes: "ares-project-properties-input-medium",
 			components: [{
 					kind: "onyx.Input",
-					name: "IosImgPath", 
+					name: "ImgPath",
 					classes: "enyo-unselectable"
 				}
 			]
 		},
-		{kind: "onyx.IconButton", name:"IosImgButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"},
+		{kind: "onyx.IconButton", name:"ImgButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"},
 		{content: "Length", classes: "ares-project-properties-drawer-row-attribut-label"},
 		{
 			kind: "onyx.InputDecorator",
 			classes: "ares-project-properties-input-small",
 			components: [{
 					kind: "onyx.Input",
-					name: "IosImgHeight", 
-					onchange: "updateIosIconHeightValue"
+					name: "ImgHeight",
+					onchange: "updateIconHeightValue"
 				}
 			]
 		},
@@ -639,8 +632,8 @@ enyo.kind({
 			classes: "ares-project-properties-input-small",
 			components: [{
 					kind: "onyx.Input",
-					name: "IosImgWidth",					
-					onchange: "updateIosIconWidhtValue"
+					name: "ImgWidth",
+					onchange: "updateIconWidhtValue"
 				}
 			]
 		}
@@ -659,11 +652,14 @@ enyo.kind({
 		this.activatedChanged();
 		this.statusChanged();
 		this.buttonTipChanged();
+
+		this.heightChanged();
+		this.widthChanged();
 	},
 
 	/**
 	 * Set the content of the row's label when the row is created
-	 * @ private
+	 * @private
 	 */
 	labelChanged: function () {
 		this.$.label.setContent(this.label);
@@ -673,24 +669,24 @@ enyo.kind({
 	 * @private
 	 */
 	heightChanged: function(){
-		this.$.IosImgHeight.setValue(this.height);
+		this.$.ImgHeight.setValue(this.height || "");
 	},
 
 	/**
 	 * @private
 	 */
 	widthChanged: function(){
-		this.$.IosImgWidth.setValue(this.width);
+		this.$.ImgWidth.setValue(this.width  || "");
 	},
 
 	/**
 	 * @param  {Object} inSender the event sender
 	 * @param  {Object} inValue  the event value
-	 * 
+	 *
 	 * @private
 	 */
-	updateIosIconHeightValue: function (inSender, inValue) {
-		this.setHeight(inValue.content);
+	updateIconHeightValue: function (inSender, inValue) {
+		this.setHeight(inSender.getValue());
 
 		return true;
 	},
@@ -698,46 +694,46 @@ enyo.kind({
 	/**
 	 * @param  {Object} inSender the event sender
 	 * @param  {Object} inValue  the event value
-	 * 
+	 *
 	 * @private
 	 */
-	updateIosIconWidhtValue: function (inSender, inValue) {
-		this.setWidth(inValue.content);
+	updateIconWidhtValue: function (inSender, inValue) {
+		this.setWidth(inSender.getValue());
 
 		return true;
 	},
 
 	/** @private */
 	valueChanged: function () {
-		this.$.IosImgPath.setValue(this.value);
+		this.$.ImgPath.setValue(this.value);
 		this.setStatus(true);
 	},
 	/** @private */
 	inputTipChanged: function () {
-		this.$.IosImgPath.setAttribute("title", this.inputTip);
+		this.$.ImgPath.setAttribute("title", this.inputTip);
 	},
 	/** @private */
 	activatedChanged: function () {
 		if (this.activated) {
-			this.$.IosImgButton.show();
+			this.$.ImgButton.show();
 			this.statusChanged();
 		} else {
-			this.$.IosImgButton.hide();
+			this.$.ImgButton.hide();
 		}
 	},
 	/** @private */
 	statusChanged: function () {
 		if (this.status) {
-			this.$.IosImgButton.setSrc("$project-view/assets/images/file-32x32.png");
+			this.$.ImgButton.setSrc("$project-view/assets/images/file-32x32.png");
 		} else {
-			this.$.IosImgButton.setSrc("$project-view/assets/images/file_broken-32x32.png");
+			this.$.ImgButton.setSrc("$project-view/assets/images/file_broken-32x32.png");
 		}
 	},
 	/** @private */
 	buttonTipChanged: function () {
-		this.$.IosImgButton.setAttribute("title", this.buttonTip);
+		this.$.ImgButton.setAttribute("title", this.buttonTip);
 	},
-	
+
 	/** @private */
 	pathInputTap: function (inSender, inEvent) {
 		var header = "";
@@ -751,457 +747,14 @@ enyo.kind({
 	},
 	/** @public */
 	setProjectConfig: function (config) {
-		this.setValue(config[this.name]["ios"].src);
-		this.setHeight(config[this.name]["ios"].height);
-		this.setWidth(config[this.name]["ios"].width);
+		this.setValue(config[this.name][this.platform].src);
+		this.setHeight(config[this.name][this.platform].height);
+		this.setWidth(config[this.name][this.platform].width);
 	},
 	/** @public */
 	getProjectConfig: function (config) {
-		config[this.name]["ios"].src = this.getValue();
-		config[this.name]["ios"].height = this.getHeight();
-		config[this.name]["ios"].width = this.getWidth();
-	}
-});
-
-/**
- * Define a row to let the user add the path to a default icon or a splash screen image into the file "config.xml".
- */
-enyo.kind({
-	name: "Phonegap.ProjectProperties.GeneralImgRow",
-	kind: "Phonegap.ProjectProperties.Row",
-	classes: "ares-project-properties-drawer-row",
-	debug: false,	
-	events: {
-		onInputButtonTap: "",
-		onPathChecked: ""
-	},
-	published: {
-		inputTip: "",
-		activated: false,
-		status: false,
-		buttonTip: ""
-	},
-	components: [
-		{
-			name: "label",
-			classes: "ares-project-properties-drawer-row-label"
-		}, 
-		{
-			kind: "onyx.InputDecorator",
-			classes: "ares-project-properties-input-medium", 
-			components: [{
-					kind: "onyx.Input",
-					name: "GeneralImgPath", 
-					classes: "enyo-unselectable"
-				}
-			]
-		},
-		{kind: "onyx.IconButton", name:"GeneralImgButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"}
-	],
-
-	/**
-	 * @private
-	 */
-	create: function () {
-		ares.setupTraceLogger(this);
-		this.inherited(arguments);
-		this.labelChanged();
-
-		this.valueChanged();
-		this.inputTipChanged();
-		this.activatedChanged();
-		this.statusChanged();
-		this.buttonTipChanged();
-	},
-
-	/**
-	 * Set the content of the row's label when the row is created
-	 * @ private
-	 */
-	labelChanged: function () {
-		this.$.label.setContent(this.label);
-	},
-
-	/** @private */
-	valueChanged: function () {
-		this.$.GeneralImgPath.setValue(this.value);
-		this.setStatus(true);
-	},
-	/** @private */
-	inputTipChanged: function () {
-		this.$.GeneralImgPath.setAttribute("title", this.inputTip);
-	},
-	/** @private */
-	activatedChanged: function () {
-		if (this.activated) {
-			this.$.GeneralImgButton.show();
-			this.statusChanged();
-		} else {
-			this.$.GeneralImgButton.hide();
-		}
-	},
-	/** @private */
-	statusChanged: function () {
-		if (this.status) {
-			this.$.GeneralImgButton.setSrc("$project-view/assets/images/file-32x32.png");
-		} else {
-			this.$.GeneralImgButton.setSrc("$project-view/assets/images/file_broken-32x32.png");
-		}
-	},
-	/** @private */
-	buttonTipChanged: function () {
-		this.$.GeneralImgButton.setAttribute("title", this.buttonTip);
-	},
-	
-	/** @private */
-	pathInputTap: function (inSender, inEvent) {
-		var header = "";
-		if (this.name === 'icon') {
-			header = $L("Select an icon file");
-		} else if (this.name === 'splashScreen') {
-			header = $L("Select a splashscreen file");
-		}
-		this.doInputButtonTap({header: header});
-		return true;
-	},
-	/** @public */
-	setProjectConfig: function (config) {
-		this.setValue(config[this.name]["general"].src);
-	},
-	/** @public */
-	getProjectConfig: function (config) {
-		config[this.name]["general"].src = this.getValue();
-	}
-});
-
-
-/**
- * Define a row to let the user add the path to a Winphone icon or a splash screen image into the file "config.xml".
- */
-enyo.kind({
-	name: "Phonegap.ProjectProperties.WinphoneImgRow",
-	kind: "Phonegap.ProjectProperties.Row",
-	classes: "ares-project-properties-drawer-row",
-	debug: false,
-	events: {
-		onInputButtonTap: "",
-		onPathChecked: ""
-	},
-	published: {
-		inputTip: "",
-		activated: false,
-		status: false,
-		buttonTip: ""
-	},
-	components: [
-		{
-			name: "label",
-			classes: "ares-project-properties-drawer-row-label"
-		}, 
-		{
-			kind: "onyx.InputDecorator",
-			classes: "ares-project-properties-input-medium", 
-			components: [{
-					kind: "onyx.Input",
-					name: "WinphoneImgPath", 
-					classes: "enyo-unselectable"
-				}
-			]
-		},
-		{kind: "onyx.IconButton", name:"WinphoneImgButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"}
-	],
-
-	/**
-	 * @private
-	 */
-	create: function () {
-		ares.setupTraceLogger(this);
-		this.inherited(arguments);
-		this.labelChanged();
-
-		this.valueChanged();
-		this.inputTipChanged();
-		this.activatedChanged();
-		this.statusChanged();
-		this.buttonTipChanged();
-	},
-
-	/**
-	 * Set the content of the row's label when the row is created
-	 * @ private
-	 */
-	labelChanged: function () {
-		this.$.label.setContent(this.label);
-	},
-
-	/** @private */
-	valueChanged: function () {
-		this.$.WinphoneImgPath.setValue(this.value);
-		this.setStatus(true);
-	},
-	/** @private */
-	inputTipChanged: function () {
-		this.$.WinphoneImgPath.setAttribute("title", this.inputTip);
-	},
-	/** @private */
-	activatedChanged: function () {
-		if (this.activated) {
-			this.$.WinphoneImgButton.show();
-			this.statusChanged();
-		} else {
-			this.$.WinphoneImgButton.hide();
-		}
-	},
-	/** @private */
-	statusChanged: function () {
-		if (this.status) {
-			this.$.WinphoneImgButton.setSrc("$project-view/assets/images/file-32x32.png");
-		} else {
-			this.$.WinphoneImgButton.setSrc("$project-view/assets/images/file_broken-32x32.png");
-		}
-	},
-	/** @private */
-	buttonTipChanged: function () {
-		this.$.WinphoneImgButton.setAttribute("title", this.buttonTip);
-	},
-	
-	/** @private */
-	pathInputTap: function (inSender, inEvent) {
-		var header = "";
-		if (this.name === 'icon') {
-			header = $L("Select an icon file");
-		} else if (this.name === 'splashScreen') {
-			header = $L("Select a splashscreen file");
-		}
-		this.doInputButtonTap({header: header});
-		return true;
-	},
-	/** @public */
-	setProjectConfig: function (config) {
-		this.setValue(config[this.name]["winphone"].src);
-	},
-	/** @public */
-	getProjectConfig: function (config) {
-		config[this.name]["winphone"].src = this.getValue();
-	}
-});
-
-/**
- * Define a row to let the user add the path to a BlackBerry icon or a splash screen image into the file "config.xml".
- */
-enyo.kind({
-	name: "Phonegap.ProjectProperties.BlackBerryImgRow",
-	kind: "Phonegap.ProjectProperties.Row",
-	classes: "ares-project-properties-drawer-row",
-	debug: false,
-	events: {
-		onInputButtonTap: "",
-		onPathChecked: ""
-	},
-	published: {
-		inputTip: "",
-		activated: false,
-		status: false,
-		buttonTip: ""
-	},
-	components: [
-		{
-			name: "label",
-			classes: "ares-project-properties-drawer-row-label"
-		}, 
-		{
-			kind: "onyx.InputDecorator",
-			classes: "ares-project-properties-input-medium", 
-			components: [{
-					kind: "onyx.Input",
-					name: "BlackBerryImgPath", 
-					classes: "enyo-unselectable"
-				}
-			]
-		},
-		{kind: "onyx.IconButton", name:"BlackBerryImgButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"}
-	],
-
-	/**
-	 * @private
-	 */
-	create: function () {
-		ares.setupTraceLogger(this);
-		this.inherited(arguments);
-		this.labelChanged();
-
-		this.valueChanged();
-		this.inputTipChanged();
-		this.activatedChanged();
-		this.statusChanged();
-		this.buttonTipChanged();
-	},
-	/**
-	 * Set the content of the row's label when the row is created
-	 * @ private
-	 */
-	labelChanged: function () {
-		this.$.label.setContent(this.label);
-	},
-
-	/** @private */
-	valueChanged: function () {
-		this.$.BlackBerryImgPath.setValue(this.value);
-		this.setStatus(true);
-	},
-	/** @private */
-	inputTipChanged: function () {
-		this.$.BlackBerryImgPath.setAttribute("title", this.inputTip);
-	},
-	/** @private */
-	activatedChanged: function () {
-		if (this.activated) {
-			this.$.BlackBerryImgButton.show();
-			this.statusChanged();
-		} else {
-			this.$.BlackBerryImgButton.hide();
-		}
-	},
-	/** @private */
-	statusChanged: function () {
-		if (this.status) {
-			this.$.BlackBerryImgButton.setSrc("$project-view/assets/images/file-32x32.png");
-		} else {
-			this.$.BlackBerryImgButton.setSrc("$project-view/assets/images/file_broken-32x32.png");
-		}
-	},
-	/** @private */
-	buttonTipChanged: function () {
-		this.$.BlackBerryImgButton.setAttribute("title", this.buttonTip);
-	},
-	
-	/** @private */
-	pathInputTap: function (inSender, inEvent) {
-		var header = "";
-		if (this.name === 'icon') {
-			header = $L("Select an icon file");
-		} else if (this.name === 'splashScreen') {
-			header = $L("Select a splashscreen file");
-		}
-		this.doInputButtonTap({header: header});
-		return true;
-	},
-	/** @public */
-	setProjectConfig: function (config) {
-		this.setValue(config[this.name]["blackberry"].src);
-	},
-	/** @public */
-	getProjectConfig: function (config) {
-		config[this.name]["blackberry"].src = this.getValue();
-	}
-});
-
-/**
- * Define a row to let the user add the path to a Webos icon or a splash screen image into the file "config.xml".
- */
-enyo.kind({
-	name: "Phonegap.ProjectProperties.WebOsImgRow",
-	kind: "Phonegap.ProjectProperties.Row",
-	classes: "ares-project-properties-drawer-row",
-	debug: false,
-	events: {
-		onInputButtonTap: "",
-		onPathChecked: ""
-	},
-	published: {
-		inputTip: "",
-		activated: false,
-		status: false,
-		buttonTip: ""
-	},
-	components: [
-		{
-			name: "label",
-			classes: "ares-project-properties-drawer-row-label"
-		}, 
-		{
-			kind: "onyx.InputDecorator",
-			classes: "ares-project-properties-input-medium", 
-			components: [{
-					kind: "onyx.Input",
-					name: "WebOsImgPath", 
-					classes: "enyo-unselectable"
-				}
-			]
-		},
-		{kind: "onyx.IconButton", name:"WebOsImgButton", src: "$project-view/assets/images/file-32x32.png", ontap: "pathInputTap"}
-	],
-
-	/**
-	 * @private
-	 */
-	create: function () {
-		ares.setupTraceLogger(this);
-		this.inherited(arguments);
-		this.labelChanged();
-
-		this.valueChanged();
-		this.inputTipChanged();
-		this.activatedChanged();
-		this.statusChanged();
-		this.buttonTipChanged();
-	},
-	/**
-	 * Set the content of the row's label when the row is created
-	 * @ private
-	 */
-	labelChanged: function () {
-		this.$.label.setContent(this.label);
-	},	
-
-	/** @private */
-	valueChanged: function () {
-		this.$.WebOsImgPath.setValue(this.value);
-		this.setStatus(true);
-	},
-	/** @private */
-	inputTipChanged: function () {
-		this.$.WebOsImgPath.setAttribute("title", this.inputTip);
-	},
-	/** @private */
-	activatedChanged: function () {
-		if (this.activated) {
-			this.$.WebOsImgButton.show();
-			this.statusChanged();
-		} else {
-			this.$.WebOsImgButton.hide();
-		}
-	},
-	/** @private */
-	statusChanged: function () {
-		if (this.status) {
-			this.$.WebOsImgButton.setSrc("$project-view/assets/images/file-32x32.png");
-		} else {
-			this.$.WebOsImgButton.setSrc("$project-view/assets/images/file_broken-32x32.png");
-		}
-	},
-	/** @private */
-	buttonTipChanged: function () {
-		this.$.WebOsImgButton.setAttribute("title", this.buttonTip);
-	},
-	
-	/** @private */
-	pathInputTap: function (inSender, inEvent) {
-		var header = "";
-		if (this.name === 'icon') {
-			header = $L("Select an icon file");
-		} else if (this.name === 'splashScreen') {
-			header = $L("Select a splashscreen file");
-		}
-		this.doInputButtonTap({header: header});
-		return true;
-	},
-	/** @public */
-	setProjectConfig: function (config) {
-		this.setValue(config[this.name]["webos"].src);
-	},
-	/** @public */
-	getProjectConfig: function (config) {
-		config[this.name]["webos"].src = this.getValue();
+		config[this.name][this.platform].src = this.getValue();
+		config[this.name][this.platform].height = this.getHeight();
+		config[this.name][this.platform].width = this.getWidth();
 	}
 });
