@@ -3,7 +3,7 @@ enyo.kind(
 		name: "PreviewDevicePicker",
 		kind: "onyx.Picker",
 		components: [
-			{content: "default",           value: { height:  800, width:  600, ppi: 163, dpr: 1 }, active: true},
+			{content: "HDTV",           value: { height:  1080, width:  1920, ppi: 163, dpr: 1 }, active: true},
 			{content: "iPhone\u2122",      value: { height:  480, width:  320, ppi: 163, dpr: 1 }},
 			{content: "iPhone\u2122 4",    value: { height:  960, width:  640, ppi: 326, dpr: 2 }},
 			{content: "iPhone\u2122 5",    value: { height: 1136, width:  640, ppi: 326, dpr: 2 }},
@@ -40,8 +40,8 @@ enyo.kind(
 									}
 								]
 							},
-							{content: "width: 600 px",  name: "devWidth"},
-							{content: "height: 800 px", name: "devHeight"},
+							{content: "width: 1080 px",  name: "devWidth"},
+							{content: "height: 1920 px", name: "devHeight"},
 							{content: "DPR: 1",        name: "devDPR",
 							 attributes: {title: "display pixel ratio"} }
 						]
@@ -60,16 +60,16 @@ enyo.kind(
 									{
 										kind: "onyx.Picker", name: "orientation",
 										components: [
-											{content: "portrait", active: true },
-											{content: "landscape"              }
+											{content: "portrait"},
+											{content: "landscape", active: true }
 										]
 									}
 								]
 							},
-							{content: "width: 600 px",  name: "screenWidth",
+							{content: "width: 1920 px",  name: "screenWidth",
 							 attributes: { title: "device width divided by DPR" }
 							},
-							{content: "height: 800 px", name: "screenHeight",
+							{content: "height: 1080 px", name: "screenHeight",
 							 attributes: { title: "device height divided by DPR" }
 							}
 						]
@@ -179,6 +179,7 @@ enyo.kind(
 			this.iframeUrl = param.url ;
 
 			this.$.scrolledIframe.setUrl   (param.url) ;
+			this.resize();
 		},
 
 		reload: function() {
