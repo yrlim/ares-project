@@ -166,6 +166,7 @@ enyo.kind({
 		return true;
 	},
 	openDoc: function(inDocData) {
+		this.log(inDocData.getFile().name, ": ", inDocData);
 		// If we are changing documents, reparse any changes into the current projectIndexer
 		if (this.docData && this.docData.getEdited()) {
 			this.reparseAction(true);
@@ -676,9 +677,15 @@ enyo.kind({
 	},
 	// called when designer has modified the components
 	updateComponents: function(inSender, inEvent) {
+		this.log(inSender, inEvent);
+		this.log("docData", this.docData);
+		this.log(inEvent.contents);
+		this.log("analysis", this.analysis.objects.length, this.analysis.objects);
 		this.injected = true;
 		for( var i = this.analysis.objects.length -1 ; i >= 0 ; i-- ) {
+			this.log(i);
 			if (inEvent.contents[i]) {
+				this.log(inEvent.contents[i]);
 				// Insert the new version of components (replace components block, or insert at end)
 				var obj = this.analysis.objects[i];
 				var comps = inEvent.contents[i];
@@ -850,6 +857,7 @@ enyo.kind({
 	 * @protected
 	 */
 	beforeClosingDocument: function() {
+		this.log("docData", this.docData);
 		this.$.ace.destroySession(this.docData.getAceSession());
 		// NOTE: docData will be clear when removed from the Ares.Workspace.files collections
 		this.resetAutoCompleteData();

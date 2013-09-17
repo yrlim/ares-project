@@ -180,6 +180,7 @@ enyo.kind({
 	},
 	saveDocument: function(inSender, inEvent) {
 		this.trace("sender:", inSender, ", event:", inEvent);
+		this.log("sender:", inSender, ", event:", inEvent);
 		var content = inEvent.content;
 		var self = this;
 		this._saveDocument(inEvent.content, {service: inEvent.file.service, fileId: inEvent.file.id}, function(err) {
@@ -275,6 +276,7 @@ enyo.kind({
 	},
 	closeDocument: function(inSender, inEvent) {
 		this.trace("sender:", inSender, ", event:", inEvent);
+		this.log("sender:", inSender, ", event:", inEvent);
 		var self = this;
 		this._closeDocument(inEvent.id, function() {
 			if (! Ares.Workspace.files.length ) {
@@ -308,6 +310,7 @@ enyo.kind({
 	},
 	/** @private */
 	_closeDocument: function(docId, next) {
+		this.log(docId);
 		if (docId) {
 			// remove file from cache
 			Ares.Workspace.files.removeEntry(docId);
@@ -318,6 +321,8 @@ enyo.kind({
 		}
 	},
 	designDocument: function(inSender, inEvent) {
+		this.log("fileIndexer:", inEvent.fileIndexer.name, " / file: ", inEvent.kinds[0].name);
+		this.log(inEvent);
 		this.syncEditedFiles();
 		this.componentsRegistry.deimos.load(inEvent);
 		this.componentsRegistry.designerPanels.$.panels.setIndex(this.deimosViewIndex);
@@ -325,15 +330,19 @@ enyo.kind({
 	},
 	//* A code change happened in Phobos - push change to Deimos
 	phobosUpdate: function(inSender, inEvent) {
+		this.log("fileIndexer:", inEvent.fileIndexer.name, " / file data", inEvent.docData.getFile().path);
+		this.log(inEvent);
 		this.componentsRegistry.deimos.load(inEvent);
 	},
 	//* A design change happened in Deimos - push change to Phobos
 	designerUpdate: function(inSender, inEvent) {
+		this.log(inSender, inEvent);
 		if (inEvent) {
 			this.componentsRegistry.phobos.updateComponents(inSender, inEvent);
 		}
 	},
 	closeDesigner: function(inSender, inEvent) {
+		this.log(inSender, inEvent);
 		this.designerUpdate(inSender, inEvent);
 		this.componentsRegistry.designerPanels.$.panels.setIndex(this.phobosViewIndex);
 		this.activeDocument.setCurrentIF('code');
@@ -413,17 +422,19 @@ enyo.kind({
 			this.switchToDocument(d);
 		} else if (this.debug) {
 			throw("File ID " + d + " not found in cache!");
-		}
-		else {
+		} else {
 			alert("File ID not found in cache!");
 		}
 	},
 	switchToDocument: function(d) {
+		this.log(d.getFile().name, ": ", d);
 		// We no longer save the data as the ACE edit session will keep the data for us
 		if (!this.activeDocument || d !== this.activeDocument) {
+			this.log("openDoc");
 			this.componentsRegistry.phobos.openDoc(d);
 		}
 		var currentIF = d.getCurrentIF();
+		this.log("currentIF", currentIF);
 		this.activeDocument = d;
 		this.componentsRegistry.designerPanels.addPreviewTooltip("Preview "+this.activeDocument.getProjectData().id);
 		
@@ -456,6 +467,7 @@ enyo.kind({
 	// document other than the currently-active one, so we must first
 	// switch the active document and then close it
 	bounceCloseFileRequest: function(inSender, inEvent) {
+		this.log();
 		this.switchFile(inSender, inEvent);
 		enyo.asyncMethod(this.componentsRegistry.phobos, "closeDocAction");
 	},

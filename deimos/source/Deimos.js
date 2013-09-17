@@ -95,6 +95,8 @@ enyo.kind({
 	kinds: [],
 	index: null,
 	previousContents: [],
+	debugfilename: "",
+	rendering: false,
 	create: function() {
 		ares.setupTraceLogger(this);
 		this.inherited(arguments);
@@ -119,9 +121,17 @@ enyo.kind({
 	 * @public
 	 */
 	load: function(data) {
+		if (this.rendering) {
+			this.log("Argh");
+		}
+		this.rendering = true;
+		this.log("fileIndexer:", data.fileIndexer.name, " / file: ", data.kinds[0].name);
+		this.log(data);
+		this.debugfilename = data.kinds[0].name;
 		this.enableDesignerActionButtons(false);
 
 		var what = data.kinds;
+		this.log("what", what);
 		var maxLen = 0;
 		
 		this.index = null;
@@ -350,11 +360,17 @@ enyo.kind({
 		this.$.inspector.userDefinedAttributes[inComponent.aresId].style = inComponent.style;
 	},
 	prepareDesignerUpdate: function() {
+		this.log("index", this.index);
+		this.log("kinds", this.kinds);
+		this.log("file name", this.debugfilename);
 		if (this.index !== null) {
 			// Prepare the data for the code editor
 			var event = {contents: []};
 			for(var i = 0 ; i < this.kinds.length ; i++) {
+				this.log("i", i, "kinds", this.kinds[i]);
+				this.log("i", i, "components", this.kinds[i].components);
 				event.contents[i] = (i === this.index) ? enyo.json.codify.to(this.cleanUpComponents(this.kinds[i].components)) : null;
+				this.log("i", i, "contents", event.contents[i]);
 			}
 			// the length of the returned event array is significant for the undo/redo operation.
 			// event.contents.length must match this.kinds.length even if it contains only null values
@@ -363,6 +379,7 @@ enyo.kind({
 				// except when undo/redo would not bring any change...
 				event.contents=[];
 			}
+			this.log("event", event);
 			return event;
 		}
 	},
@@ -370,6 +387,7 @@ enyo.kind({
 		this.$.designer.cleanUp();
 		
 		var event = this.prepareDesignerUpdate();
+		this.log(event);
 
 		this.setProjectData(null);
 		this.doCloseDesigner(event);
@@ -378,14 +396,16 @@ enyo.kind({
 	},
 	// When the designer finishes rendering, re-build the components view
 	designRendered: function(inSender, inEvent) {
+		this.log("inEvent", inEvent.content);
 		var components = enyo.json.codify.from(inEvent.content);
 		
 		this.refreshComponentView(components);
 		
 		// Recreate this kind's components block based on components in Designer and user-defined properties in Inspector.
 		this.kinds[this.index].components = this.cleanUpComponents(components, true);
-		
+		this.log("kinds", this.kinds[this.index].components);
 		this.designerUpdate();
+		this.rendering = false;
 
 		return true;
 	},
@@ -611,6 +631,7 @@ enyo.kind({
 		}
 	},
 	cleanUpComponents: function(inComponents, inKeepAresIds) {
+		this.log("inComponents", inComponents);
 		var component,
 			ret = [],
 			i;
@@ -618,7 +639,7 @@ enyo.kind({
 		for (i=0; (component = inComponents[i]); i++) {
 			ret.push(this.cleanUpComponent(component, inKeepAresIds));
 		}
-		
+		this.log(ret);
 		return ret;
 	},
 	cleanUpComponent: function(inComponent, inKeepAresIds) {
@@ -636,6 +657,7 @@ enyo.kind({
 		atts = this.$.inspector.userDefinedAttributes[aresId];
 		
 		if (!atts) {
+			this.log("!", aresId);
 			return cleanComponent;
 		}
 		
@@ -695,7 +717,7 @@ enyo.kind({
 	},
 	designerUpdate: function() {
 		var event = this.prepareDesignerUpdate();
-
+		this.log(event);
 		this.doDesignerUpdate(event);
 		this.enableDesignerActionButtons(true);
 	},

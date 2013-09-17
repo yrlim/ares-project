@@ -50,6 +50,7 @@ enyo.kind({
 		return true;
 	},
 	removeTab: function(id) {
+		this.log(this);
 		this.$.tabs.removeTab({ userId: id }) ;
 		if (this.$.tabs.isEmpty() ) {
 			this.$.tabs.hide();

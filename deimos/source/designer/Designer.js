@@ -30,7 +30,7 @@ enyo.kind({
 	reloadNeeded: false,
 	scale: 1,
 	reloading: false,
-	debug: false,
+	debug: true,
 	create: function() {
 		ares.setupTraceLogger(this);
 		this.inherited(arguments);
