@@ -60,11 +60,12 @@ enyo.kind({
 			ondrag            : "stopPanelEvent",
 			ondragfinish      : "stopPanelEvent",
 			components: [
+				// FIXME: following "components" sub-level could be removed, but it brakes the UI; Look at less/css related files...
 				{components: [
-					{kind: "Phobos", onSaveDocument: "saveDocument", onSaveAsDocument: "saveAsDocument", onCloseDocument: "closeDocument", onDesignDocument: "designDocument", onUpdate: "phobosUpdate"}
+					{kind: "Phobos"/*, onSaveDocument: "saveDocument", onSaveAsDocument: "saveAsDocument", onCloseDocument: "closeDocument", onDesignDocument: "designDocument", onUpdate: "phobosUpdate"*/}
 				]},
 				{components: [
-					{kind: "Deimos", onCloseDesigner: "closeDesigner"}
+					{kind: "Deimos"/*, onCloseDesigner: "closeDesigner"*/}
 				]}
 			]
 		},
