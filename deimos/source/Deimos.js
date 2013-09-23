@@ -122,12 +122,13 @@ enyo.kind({
 	 */
 	load: function(data) {
 		if (this.rendering) {
-			this.log("Argh");
+			this.log("previous rendering still in progress");
 		}
 		this.rendering = true;
+		this.log("data", data);
 		this.log("fileIndexer:", data.fileIndexer.name, " / file: ", data.kinds[0].name);
-		this.log(data);
-		this.debugfilename = data.kinds[0].name;
+		//this.debugfilename = data.kinds[0].name;
+		this.debugfilename = data.fileIndexer.name;
 		this.enableDesignerActionButtons(false);
 
 		var what = data.kinds;
@@ -168,7 +169,9 @@ enyo.kind({
 		if (index !== this.index) {
 			this.$.inspector.inspect(null);
 			this.$.inspector.setCurrentKindName(kind.name);
-			this.$.designer.setCurrentKind(kind);
+			// FIXME: ENYO-3101 enhance tracing information
+			// this.$.designer.setCurrentKind(kind);
+			this.$.designer.setCurrentKind({kind: kind, file: this.debugfilename});
 		}
 		
 		this.index = index;
@@ -221,7 +224,10 @@ enyo.kind({
 	},
 	//* Rerender current kind
 	rerenderKind: function(inSelectId) {
-		this.$.designer.setCurrentKind(this.kinds[this.index]);
+		// FIXME: ENYO-3101 enhance tracing information
+		//this.$.designer.setCurrentKind(this.kinds[this.index]);
+		this.log(this);
+		this.$.designer.setCurrentKind({kind: this.kinds[this.index], file: this.debugfilename});
 		this.$.designer.renderCurrentKind(inSelectId);
 	},
 	refreshInspector: function() {
@@ -396,15 +402,18 @@ enyo.kind({
 	},
 	// When the designer finishes rendering, re-build the components view
 	designRendered: function(inSender, inEvent) {
-		this.log("inEvent", inEvent.content);
-		var components = enyo.json.codify.from(inEvent.content);
+		//FIXME: ENYO-3101 content temporary not only val subpart
+		this.log("inEvent", inEvent.content.val);
+		var components = enyo.json.codify.from(inEvent.content.val);
 		
 		this.refreshComponentView(components);
 		
 		// Recreate this kind's components block based on components in Designer and user-defined properties in Inspector.
 		this.kinds[this.index].components = this.cleanUpComponents(components, true);
 		this.log("kinds", this.kinds[this.index].components);
-		this.designerUpdate();
+		
+		this.designerUpdate(inEvent.content.file);
+		
 		this.rendering = false;
 
 		return true;
@@ -715,10 +724,16 @@ enyo.kind({
 			}
 		}
 	},
-	designerUpdate: function() {
+	designerUpdate: function(inFilename) {
+		this.log(inFilename);
 		var event = this.prepareDesignerUpdate();
 		this.log(event);
-		this.doDesignerUpdate(event);
+		if (inFilename === this.debugfilename) {
+			this.log("files synchronized");
+			this.doDesignerUpdate(event);
+		} else {
+			this.log("files not synchronized");
+		}
 		this.enableDesignerActionButtons(true);
 	},
 	//* Called by Ares when ProjectView has new project selected

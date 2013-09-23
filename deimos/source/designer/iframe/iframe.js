@@ -117,7 +117,9 @@ enyo.kind({
 				this.setContainerData(msg.val);
 				break;
 			case "render":
-				this.renderKind(msg.val);
+				// FIXME: ENYO-3101 enhance message content with file name
+				//this.renderKind(msg.val);
+				this.renderKind(msg);
 				break;
 			case "select":
 				this.selectItem(msg.val);
@@ -350,7 +352,10 @@ enyo.kind({
 		this.sendMessage({op: "state", val: "ready"});
 	},
 	//* Render the specified kind
-	renderKind: function(inKind) {
+	// FIXME: ENYO-3101 use enhanced message to trace file rendering
+	//renderKind: function(inKind) {
+	renderKind: function(inMessage) {
+		var inKind = inMessage.val;
 		var errMsg;
 		
 		try {
@@ -398,6 +403,8 @@ enyo.kind({
 			this.parentInstance.render();
 			
 			// Notify Deimos that the kind rendered successfully
+			// FIXME: ENYO-3101 keep track of file name for the update
+			this.debugFileName = inMessage.file;
 			this.kindUpdated();
 			
 			// Select a control if so requested
@@ -713,7 +720,8 @@ enyo.kind({
 	},
 	//* Send update to Deimos with serialized copy of current kind component structure
 	kindUpdated: function() {
-		this.sendMessage({op: "rendered", val: this.$.serializer.serialize(this.parentInstance, true)});
+		// FIXME: ENYO-3101 enhance message with file name
+		this.sendMessage({op: "rendered", val: this.$.serializer.serialize(this.parentInstance, true), file: this.debugFileName});
 	},
 	//* Eval code passed in by designer
 	codeUpdate: function(inCode) {

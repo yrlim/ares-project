@@ -118,7 +118,9 @@ enyo.kind({
 			}
 		// The current kind was successfully rendered in the iframe
 		} else if(msg.op === "rendered") {
-			this.kindRendered(msg.val);
+			// FIXME: ENYO-3101 trace more information
+			//this.kindRendered(msg.val);
+			this.kindRendered(msg);
 		// Select event sent from here was completed successfully. Set _this.selection_.
 		} else if(msg.op === "selected") {
 			this.selection = enyo.json.codify.from(msg.val);
@@ -172,8 +174,9 @@ enyo.kind({
 			return;
 		}
 		
-		var currentKind = this.getCurrentKind();
-		this.sendMessage({op: "render", val: {name: currentKind.name, components: enyo.json.codify.to(currentKind.components), selectId: inSelectId}});
+		var currentKind = this.getCurrentKind().kind;
+		// FIXME: ENYO-3101 add additionnal file name to the render message
+		this.sendMessage({op: "render", val: {name: currentKind.name, components: enyo.json.codify.to(currentKind.components), selectId: inSelectId, file: this.getCurrentKind().file}});
 	},
 	select: function(inControl) {
 		this.sendMessage({op: "select", val: inControl});
